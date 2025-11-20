@@ -20,13 +20,6 @@ const attributes = [
       },
       {
         status: "show",
-        _id: "63f078f54b86ed26b05281b4",
-        name: {
-          en: "Green",
-        },
-      },
-      {
-        status: "show",
         _id: "63f078f54b86ed26b05281b5",
         name: {
           en: "Blue",
