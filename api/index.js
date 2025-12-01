@@ -19,6 +19,7 @@ const settingRoutes = require("../routes/settingRoutes");
 const currencyRoutes = require("../routes/currencyRoutes");
 const languageRoutes = require("../routes/languageRoutes");
 const notificationRoutes = require("../routes/notificationRoutes");
+const customProductRoutes = require("../routes/customProductRoutes");
 const { isAuth, isAdmin } = require("../config/auth");
 // const {
 //   getGlobalSetting,
@@ -54,6 +55,7 @@ app.use("/api/setting/", settingRoutes);
 app.use("/api/currency/", isAuth, currencyRoutes);
 app.use("/api/language/", languageRoutes);
 app.use("/api/notification/", isAuth, notificationRoutes);
+app.use("/api/custom-products/", customProductRoutes);
 
 //if you not use admin dashboard then these two route will not needed.
 app.use("/api/admin/", adminRoutes);

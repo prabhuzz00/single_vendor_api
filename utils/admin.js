@@ -112,6 +112,7 @@ const admins = [
       "categories",
       "attributes",
       "coupons",
+      "custom-products",
       "orders",
       "order",
       "our-staff",
