@@ -3,7 +3,7 @@
     "$oid": "643970c6e58a401b6c62c5a2"
   },
   "status": "show",
-  "name": "Dollar",
+  "name": "US Dollar",
   "symbol": "$",
   "__v": 0,
   "createdAt": {
@@ -39,5 +39,33 @@
   },
   "updatedAt": {
     "$date": "2023-04-14T15:27:02.393Z"
+  }
+},{
+  "_id": {
+    "$oid": "643970c6e58a401b6c62c5a4"
+  },
+  "status": "show",
+  "name": "Canadian Dollar",
+  "symbol": "CA$",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2023-04-14T15:27:02.395Z"
+  },
+  "updatedAt": {
+    "$date": "2023-04-14T15:27:02.395Z"
+  }
+},{
+  "_id": {
+    "$oid": "643970c6e58a401b6c62c5a5"
+  },
+  "status": "show",
+  "name": "Pakistani Rupee",
+  "symbol": "Rs.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2023-04-14T15:27:02.396Z"
+  },
+  "updatedAt": {
+    "$date": "2023-04-14T15:27:02.396Z"
   }
 }]
