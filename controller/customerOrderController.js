@@ -11,7 +11,6 @@ const Setting = require("../models/Setting");
 const { sendEmail } = require("../lib/email-sender/sender");
 const { formatAmountForStripe } = require("../lib/stripe/stripe");
 const { handleCreateInvoice } = require("../lib/email-sender/create");
-const { handleProductQuantity } = require("../lib/stock-controller/others");
 const customerInvoiceEmailBody = require("../lib/email-sender/templates/order-to-customer");
 
 const addOrder = async (req, res) => {
@@ -23,7 +22,6 @@ const addOrder = async (req, res) => {
     });
     const order = await newOrder.save();
     res.status(201).send(order);
-    handleProductQuantity(order.cart);
   } catch (err) {
     res.status(500).send({
       message: err.message,
@@ -125,7 +123,6 @@ const addRazorpayOrder = async (req, res) => {
     });
     const order = await newOrder.save();
     res.status(201).send(order);
-    handleProductQuantity(order.cart);
   } catch (err) {
     res.status(500).send({
       message: err.message,

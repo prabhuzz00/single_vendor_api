@@ -75,10 +75,6 @@ const getAllProducts = async (req, res) => {
     queryObject.status = "show";
   } else if (price === "unPublished") {
     queryObject.status = "hide";
-  } else if (price === "status-selling") {
-    queryObject.stock = { $gt: 0 };
-  } else if (price === "status-out-of-stock") {
-    queryObject.stock = { $lt: 1 };
   } else if (price === "date-added-asc") {
     sortObject.createdAt = 1;
   } else if (price === "date-added-desc") {
@@ -174,7 +170,6 @@ const updateProduct = async (req, res) => {
       product.show = req.body.show;
       product.isCombination = req.body.isCombination;
       product.variants = req.body.variants;
-      product.stock = req.body.stock;
       product.prices = req.body.prices;
       product.image = req.body.image;
       product.tag = req.body.tag;

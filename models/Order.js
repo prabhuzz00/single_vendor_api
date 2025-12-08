@@ -77,6 +77,60 @@ const orderSchema = new mongoose.Schema(
       type: String,
       enum: ["Pending", "Processing", "Delivered", "Cancel"],
     },
+    shipment: {
+      provider: {
+        type: String,
+        default: null,
+      },
+      service: {
+        type: String,
+        default: null,
+      },
+      shipmentId: {
+        type: String,
+        default: null,
+      },
+      trackingId: {
+        type: String,
+        default: null,
+      },
+      trackingUrl: {
+        type: String,
+        default: null,
+      },
+      labelUrl: {
+        type: String,
+        default: null,
+      },
+      status: {
+        type: String,
+        default: null,
+      },
+      cost: {
+        type: Number,
+        default: 0,
+      },
+      currency: {
+        type: String,
+        default: "CAD",
+      },
+      createdAt: {
+        type: Date,
+        default: null,
+      },
+      lastUpdated: {
+        type: Date,
+        default: null,
+      },
+      cancelledAt: {
+        type: Date,
+        default: null,
+      },
+      rawResponse: {
+        type: Object,
+        default: null,
+      },
+    },
   },
   {
     timestamps: true,

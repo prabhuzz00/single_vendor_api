@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const {
   loginCustomer,
+  loginWithPhone,
   registerCustomer,
   verifyPhoneNumber,
   signUpWithProvider,
@@ -49,6 +50,9 @@ router.post("/register/:token", registerCustomer);
 
 //login a user
 router.post("/login", loginCustomer);
+
+//login with phone (Firebase OTP)
+router.post("/login-with-phone", loginWithPhone);
 
 //register or login with google and fb
 router.post("/signup/oauth", signUpWithOauthProvider);

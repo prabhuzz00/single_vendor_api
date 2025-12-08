@@ -208,6 +208,61 @@ const loginCustomer = async (req, res) => {
   }
 };
 
+const loginWithPhone = async (req, res) => {
+  try {
+    const { phoneNumber, firebaseToken, firebaseUid } = req.body;
+
+    if (!phoneNumber || !firebaseToken || !firebaseUid) {
+      return res.status(400).send({
+        message: "Phone number, Firebase token, and Firebase UID are required!",
+      });
+    }
+
+    // Verify Firebase token (optional but recommended for production)
+    // You can use firebase-admin here to verify the token if needed
+
+    // Check if customer exists with this phone number or Firebase UID email
+    const firebaseEmail = `${firebaseUid}@phone.auth`;
+    let customer = await Customer.findOne({
+      $or: [{ phone: phoneNumber }, { email: firebaseEmail }],
+    });
+
+    if (!customer) {
+      // Create new customer if doesn't exist
+      customer = new Customer({
+        name: phoneNumber, // Default name as phone number
+        phone: phoneNumber,
+        email: firebaseEmail, // Placeholder email
+        // No password needed for phone auth
+      });
+      await customer.save();
+    } else if (customer.phone !== phoneNumber) {
+      // Update phone number if customer was found by email but phone doesn't match
+      customer.phone = phoneNumber;
+      await customer.save();
+    }
+
+    // Generate JWT token for our system
+    const token = signInToken(customer);
+
+    res.send({
+      token,
+      _id: customer._id,
+      name: customer.name,
+      email: customer.email,
+      address: customer.address || "",
+      phone: customer.phone,
+      image: customer.image || "",
+    });
+  } catch (err) {
+    console.error("Error in loginWithPhone:", err);
+    res.status(500).send({
+      message: err.message,
+      error: "Failed to login with phone!",
+    });
+  }
+};
+
 const forgetPassword = async (req, res) => {
   const isAdded = await Customer.findOne({ email: req.body.email });
   if (!isAdded) {
@@ -568,6 +623,7 @@ const deleteCustomer = (req, res) => {
 
 module.exports = {
   loginCustomer,
+  loginWithPhone,
   verifyPhoneNumber,
   registerCustomer,
   addAllCustomers,
