@@ -21,11 +21,11 @@ const getGlobalSetting = async (req, res) => {
     // console.log("getGlobalSetting");
 
     const globalSetting = await Setting.findOne({ name: "globalSetting" });
-    
+
     if (!globalSetting) {
       return res.status(404).send({ message: "Global settings not found" });
     }
-    
+
     res.send(globalSetting.setting);
   } catch (err) {
     res.status(500).send({
@@ -81,11 +81,11 @@ const getStoreSetting = async (req, res) => {
     // console.log("getStoreSetting");
 
     const storeSetting = await Setting.findOne({ name: "storeSetting" });
-    
+
     if (!storeSetting) {
       return res.status(404).send({ message: "Store settings not found" });
     }
-    
+
     res.send(storeSetting.setting);
   } catch (err) {
     res.status(500).send({
@@ -218,6 +218,65 @@ const updateStoreCustomizationSetting = async (req, res) => {
   }
 };
 
+// Get Firebase configuration (public endpoint)
+const getFirebaseConfig = async (req, res) => {
+  try {
+    const storeSetting = await Setting.findOne({ name: "storeSetting" });
+
+    if (!storeSetting || !storeSetting.setting.firebase_status) {
+      return res.status(404).send({
+        message: "Firebase configuration not enabled or not found",
+      });
+    }
+
+    // Return only Firebase config without sensitive fields
+    res.send({
+      enabled: storeSetting.setting.firebase_status,
+      apiKey: storeSetting.setting.firebase_api_key,
+      authDomain: storeSetting.setting.firebase_auth_domain,
+      projectId: storeSetting.setting.firebase_project_id,
+      storageBucket: storeSetting.setting.firebase_storage_bucket,
+      messagingSenderId: storeSetting.setting.firebase_messaging_sender_id,
+      appId: storeSetting.setting.firebase_app_id,
+      measurementId: storeSetting.setting.firebase_measurement_id,
+    });
+  } catch (err) {
+    res.status(500).send({
+      message: err.message,
+    });
+  }
+};
+
+// Get Stallion configuration (for backend use)
+const getStallionConfig = async (req, res) => {
+  try {
+    const storeSetting = await Setting.findOne({ name: "storeSetting" });
+
+    if (!storeSetting || !storeSetting.setting.stallion_status) {
+      return res.status(404).send({
+        message: "Stallion configuration not enabled or not found",
+      });
+    }
+
+    res.send({
+      enabled: storeSetting.setting.stallion_status,
+      apiKeySandbox: storeSetting.setting.stallion_api_key_sandbox,
+      apiKeyProd: storeSetting.setting.stallion_api_key_prod,
+      baseUrlSandbox:
+        storeSetting.setting.stallion_base_url_sandbox ||
+        "https://sandbox.stallionexpress.ca/api/v4/",
+      baseUrlProd:
+        storeSetting.setting.stallion_base_url_prod ||
+        "https://ship.stallionexpress.ca/api/v4/",
+      webhookSecret: storeSetting.setting.stallion_webhook_secret,
+    });
+  } catch (err) {
+    res.status(500).send({
+      message: err.message,
+    });
+  }
+};
+
 module.exports = {
   addGlobalSetting,
   getGlobalSetting,
@@ -229,4 +288,6 @@ module.exports = {
   addStoreCustomizationSetting,
   getStoreCustomizationSetting,
   updateStoreCustomizationSetting,
+  getFirebaseConfig,
+  getStallionConfig,
 };

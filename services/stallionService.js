@@ -1,9 +1,13 @@
 const axios = require("axios");
+const Setting = require("../models/Setting");
 
 /**
  * Stallion Express Shipping Integration Service
  *
- * Environment Variables Required:
+ * Configuration is now managed through the admin panel Store Settings.
+ * Falls back to environment variables if not configured in database.
+ *
+ * Environment Variables (Fallback):
  * - STALLION_BASE_URL_SANDBOX: https://sandbox.stallionexpress.ca/api/v4/
  * - STALLION_BASE_URL_PROD: https://ship.stallionexpress.ca/api/v4/
  * - STALLION_API_KEY_SANDBOX: Your sandbox API key
@@ -13,43 +17,86 @@ const axios = require("axios");
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
-const baseURL = isDevelopment
-  ? process.env.STALLION_BASE_URL_SANDBOX ||
-    "https://sandbox.stallionexpress.ca/api/v4/"
-  : process.env.STALLION_BASE_URL_PROD ||
-    "https://ship.stallionexpress.ca/api/v4/";
+// Cache for Stallion config
+let cachedConfig = null;
+let lastFetchTime = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-const apiKey = isDevelopment
-  ? process.env.STALLION_API_KEY_SANDBOX
-  : process.env.STALLION_API_KEY_PROD;
+/**
+ * Fetch Stallion configuration from database or environment variables
+ */
+async function getStallionConfig() {
+  const now = Date.now();
+
+  // Return cached config if still valid
+  if (cachedConfig && now - lastFetchTime < CACHE_DURATION) {
+    return cachedConfig;
+  }
+
+  try {
+    const storeSetting = await Setting.findOne({ name: "storeSetting" });
+
+    if (storeSetting && storeSetting.setting.stallion_status) {
+      cachedConfig = {
+        enabled: true,
+        baseURL: isDevelopment
+          ? storeSetting.setting.stallion_base_url_sandbox ||
+            "https://sandbox.stallionexpress.ca/api/v4/"
+          : storeSetting.setting.stallion_base_url_prod ||
+            "https://ship.stallionexpress.ca/api/v4/",
+        apiKey: isDevelopment
+          ? storeSetting.setting.stallion_api_key_sandbox
+          : storeSetting.setting.stallion_api_key_prod,
+      };
+      lastFetchTime = now;
+      return cachedConfig;
+    }
+  } catch (error) {
+    console.warn(
+      "[Stallion] Failed to fetch config from database, using environment variables:",
+      error.message
+    );
+  }
+
+  // Fallback to environment variables
+  cachedConfig = {
+    enabled: true,
+    baseURL: isDevelopment
+      ? process.env.STALLION_BASE_URL_SANDBOX ||
+        "https://sandbox.stallionexpress.ca/api/v4/"
+      : process.env.STALLION_BASE_URL_PROD ||
+        "https://ship.stallionexpress.ca/api/v4/",
+    apiKey: isDevelopment
+      ? process.env.STALLION_API_KEY_SANDBOX
+      : process.env.STALLION_API_KEY_PROD,
+  };
+  lastFetchTime = now;
+  return cachedConfig;
+}
 
 // Create axios client for Stallion API
 const stallionClient = axios.create({
-  baseURL: baseURL,
   timeout: 30000,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Development debug: log whether API key is present (mask value)
-if (isDevelopment) {
-  const masked = apiKey ? `*****${String(apiKey).slice(-4)}` : "(none)";
-  console.log(`[Stallion Service] baseURL=${baseURL} apiKey=${masked}`);
-}
-
-// Add request interceptor for logging in development
+// Add request interceptor to dynamically set baseURL and auth header
 stallionClient.interceptors.request.use(
-  (config) => {
-    // Ensure API key header is attached at request time (so env changes apply)
-    if (apiKey) {
+  async (config) => {
+    const stallionConfig = await getStallionConfig();
+
+    // Set baseURL from config
+    config.baseURL = stallionConfig.baseURL;
+
+    // Ensure API key header is attached
+    if (stallionConfig.apiKey) {
       config.headers = config.headers || {};
-      // Stallion uses Authorization Bearer header
-      config.headers.Authorization = `Bearer ${apiKey}`;
+      config.headers.Authorization = `Bearer ${stallionConfig.apiKey}`;
     }
 
     if (isDevelopment) {
-      // Mask header values when logging
       const auth = config.headers?.Authorization
         ? `Bearer *****${String(config.headers.Authorization).slice(-4)}`
         : "(none)";

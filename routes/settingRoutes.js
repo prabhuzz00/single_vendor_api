@@ -11,6 +11,8 @@ const {
   addStoreCustomizationSetting,
   getStoreCustomizationSetting,
   updateStoreCustomizationSetting,
+  getFirebaseConfig,
+  getStallionConfig,
 } = require("../controller/settingController");
 
 //add a global setting
@@ -44,5 +46,11 @@ router.get("/store/customization/all", getStoreCustomizationSetting);
 
 //update online store customization setting
 router.put("/store/customization/update", updateStoreCustomizationSetting);
+
+//get Firebase configuration (public endpoint)
+router.get("/firebase/config", getFirebaseConfig);
+
+//get Stallion configuration
+router.get("/stallion/config", getStallionConfig);
 
 module.exports = router;
