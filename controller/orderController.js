@@ -77,7 +77,7 @@ const getAllOrders = async (req, res) => {
       .select(
         "_id invoice paymentMethod subTotal total user_info discount shippingCost status createdAt updatedAt"
       )
-      .sort({ updatedAt: -1 })
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limits);
 
@@ -212,7 +212,7 @@ const getDashboardRecentOrder = async (req, res) => {
 
     // query for orders
     const orders = await Order.find(queryObject)
-      .sort({ updatedAt: -1 })
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limits);
 

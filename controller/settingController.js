@@ -247,6 +247,30 @@ const getFirebaseConfig = async (req, res) => {
   }
 };
 
+// Get Cloudinary configuration (public endpoint)
+const getCloudinaryConfig = async (req, res) => {
+  try {
+    const storeSetting = await Setting.findOne({ name: "storeSetting" });
+
+    if (!storeSetting || !storeSetting.setting.cloudinary_status) {
+      return res.status(404).send({
+        message: "Cloudinary configuration not enabled or not found",
+      });
+    }
+
+    // Return only public Cloudinary config (exclude API secret)
+    res.send({
+      enabled: storeSetting.setting.cloudinary_status,
+      cloudName: storeSetting.setting.cloudinary_cloud_name,
+      uploadPreset: storeSetting.setting.cloudinary_upload_preset,
+    });
+  } catch (err) {
+    res.status(500).send({
+      message: err.message,
+    });
+  }
+};
+
 // Get Stallion configuration (for backend use)
 const getStallionConfig = async (req, res) => {
   try {
@@ -289,5 +313,6 @@ module.exports = {
   getStoreCustomizationSetting,
   updateStoreCustomizationSetting,
   getFirebaseConfig,
+  getCloudinaryConfig,
   getStallionConfig,
 };

@@ -12,6 +12,7 @@ const {
   getStoreCustomizationSetting,
   updateStoreCustomizationSetting,
   getFirebaseConfig,
+  getCloudinaryConfig,
   getStallionConfig,
 } = require("../controller/settingController");
 
@@ -49,6 +50,9 @@ router.put("/store/customization/update", updateStoreCustomizationSetting);
 
 //get Firebase configuration (public endpoint)
 router.get("/firebase/config", getFirebaseConfig);
+
+//get Cloudinary configuration (public endpoint)
+router.get("/cloudinary/config", getCloudinaryConfig);
 
 //get Stallion configuration
 router.get("/stallion/config", getStallionConfig);

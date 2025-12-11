@@ -21,6 +21,8 @@ const languageRoutes = require("../routes/languageRoutes");
 const notificationRoutes = require("../routes/notificationRoutes");
 const customProductRoutes = require("../routes/customProductRoutes");
 const shipmentRoutes = require("../routes/shipmentRoutes");
+const cookieConsentRoutes = require("../routes/cookieConsentRoutes");
+const pageRoutes = require("../routes/pageRoutes");
 const { isAuth, isAdmin } = require("../config/auth");
 // const {
 //   getGlobalSetting,
@@ -37,8 +39,22 @@ app.set("trust proxy", 1);
 
 app.use(express.json({ limit: "4mb" }));
 app.use(helmet());
-app.options("*", cors()); // include before other routes
-app.use(cors());
+
+// CORS configuration for production
+const corsOptions = {
+  origin: [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "https://single-vendor-client.vercel.app",
+    "https://infotech-single-fe.vercel.app",
+    "https://singlevendoradmin.vercel.app",
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+
+app.options("*", cors(corsOptions)); // include before other routes
+app.use(cors(corsOptions));
 
 //root route
 app.get("/", (req, res) => {
@@ -58,6 +74,8 @@ app.use("/api/language/", languageRoutes);
 app.use("/api/notification/", isAuth, notificationRoutes);
 app.use("/api/custom-products/", customProductRoutes);
 app.use("/api/shipping/", shipmentRoutes);
+app.use("/api/cookie-consent/", cookieConsentRoutes);
+app.use("/api/pages/", pageRoutes);
 
 //if you not use admin dashboard then these two route will not needed.
 app.use("/api/admin/", adminRoutes);

@@ -48,6 +48,18 @@ async function getStallionConfig() {
           ? storeSetting.setting.stallion_api_key_sandbox
           : storeSetting.setting.stallion_api_key_prod,
       };
+
+      // Debug logging
+      if (isDevelopment) {
+        console.log("[Stallion Config] Loaded from database:", {
+          enabled: cachedConfig.enabled,
+          baseURL: cachedConfig.baseURL,
+          apiKeyExists: !!cachedConfig.apiKey,
+          apiKeyLength: cachedConfig.apiKey?.length || 0,
+          environment: isDevelopment ? "sandbox" : "production",
+        });
+      }
+
       lastFetchTime = now;
       return cachedConfig;
     }
@@ -70,6 +82,18 @@ async function getStallionConfig() {
       ? process.env.STALLION_API_KEY_SANDBOX
       : process.env.STALLION_API_KEY_PROD,
   };
+
+  // Debug logging for fallback
+  if (isDevelopment) {
+    console.log("[Stallion Config] Loaded from environment variables:", {
+      enabled: cachedConfig.enabled,
+      baseURL: cachedConfig.baseURL,
+      apiKeyExists: !!cachedConfig.apiKey,
+      apiKeyLength: cachedConfig.apiKey?.length || 0,
+      environment: isDevelopment ? "sandbox" : "production",
+    });
+  }
+
   lastFetchTime = now;
   return cachedConfig;
 }
@@ -139,13 +163,16 @@ stallionClient.interceptors.response.use(
  */
 const getPostageTypes = async () => {
   try {
-    if (!apiKey) {
+    const stallionConfig = await getStallionConfig();
+
+    if (!stallionConfig.apiKey) {
       return {
         success: false,
         error:
-          "Stallion API key not configured. Please set STALLION_API_KEY_SANDBOX or STALLION_API_KEY_PROD in the server .env",
+          "Stallion API key not configured. Please set it in Admin Panel > Settings > Store Settings or in environment variables.",
       };
     }
+
     const response = await stallionClient.get("/postage-types");
     return {
       success: true,
@@ -180,12 +207,15 @@ const getPostageTypes = async () => {
  * @returns {Promise<Object>} Available shipping rates
  */
 const getRates = async (payload) => {
+  let stallionConfig;
   try {
-    if (!apiKey) {
+    stallionConfig = await getStallionConfig();
+
+    if (!stallionConfig.apiKey) {
       return {
         success: false,
         error:
-          "Stallion API key not configured. Please set STALLION_API_KEY_SANDBOX or STALLION_API_KEY_PROD in the server .env",
+          "Stallion API key not configured. Please set it in Admin Panel > Settings > Store Settings or in environment variables.",
       };
     }
 
@@ -210,8 +240,10 @@ const getRates = async (payload) => {
       status,
       message: error.response?.data?.message || error.message,
       errors: error.response?.data?.errors,
-      apiKeyPresent: Boolean(apiKey),
-      apiKeyEnding: apiKey ? `...${String(apiKey).slice(-4)}` : "none",
+      apiKeyPresent: Boolean(stallionConfig.apiKey),
+      apiKeyEnding: stallionConfig.apiKey
+        ? `...${String(stallionConfig.apiKey).slice(-4)}`
+        : "none",
     });
 
     if (status === 401 || status === 403) {
@@ -247,12 +279,15 @@ const getRates = async (payload) => {
  * @returns {Promise<Object>} Created shipment details with tracking and label
  */
 const createShipment = async (payload) => {
+  let stallionConfig;
   try {
-    if (!apiKey) {
+    stallionConfig = await getStallionConfig();
+
+    if (!stallionConfig.apiKey) {
       return {
         success: false,
         error:
-          "Stallion API key not configured. Please set STALLION_API_KEY_SANDBOX or STALLION_API_KEY_PROD in the server .env",
+          "Stallion API key not configured. Please set it in Admin Panel > Settings > Store Settings or in environment variables.",
       };
     }
 
@@ -277,7 +312,7 @@ const createShipment = async (payload) => {
       status,
       message: error.response?.data?.message || error.message,
       errors: error.response?.data?.errors,
-      apiKeyPresent: Boolean(apiKey),
+      apiKeyPresent: Boolean(stallionConfig.apiKey),
     });
 
     if (status === 401 || status === 403) {
@@ -304,13 +339,16 @@ const createShipment = async (payload) => {
  */
 const trackShipment = async (trackingId) => {
   try {
-    if (!apiKey) {
+    const stallionConfig = await getStallionConfig();
+
+    if (!stallionConfig.apiKey) {
       return {
         success: false,
         error:
-          "Stallion API key not configured. Please set STALLION_API_KEY_SANDBOX or STALLION_API_KEY_PROD in the server .env",
+          "Stallion API key not configured. Please set it in Admin Panel > Settings > Store Settings or in environment variables.",
       };
     }
+
     const response = await stallionClient.get(`/shipments/${trackingId}`);
     return {
       success: true,
