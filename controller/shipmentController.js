@@ -103,11 +103,45 @@ const getShippingRates = async (req, res) => {
       currency: "CAD",
     };
 
+    // Debug: Log parcel info and final weight
+    console.log("[ShipmentController] Parcel details:", {
+      numParcels: parcels.length,
+      parcels: parcels.map((p) => ({
+        weight: p.weight,
+        length: p.length,
+        width: p.width,
+        height: p.height,
+        quantity: p.quantity,
+        totalWeight: (Number(p.weight) || 0.5) * (Number(p.quantity) || 1),
+      })),
+      totalWeight: ratePayload.weight,
+      weightUnit: "kg",
+    });
+
     if (serviceType) {
       ratePayload.service_code = serviceType;
     }
 
+    // Debug: Log the payload being sent to Stallion
+    console.log("[ShipmentController] Stallion rate request payload:", {
+      from_address: ratePayload.from_address,
+      to_address: ratePayload.to_address,
+      weight: ratePayload.weight,
+      weight_unit: ratePayload.weight_unit,
+      length: ratePayload.length,
+      width: ratePayload.width,
+      height: ratePayload.height,
+      size_unit: ratePayload.size_unit,
+    });
+
     const result = await stallionService.getRates(ratePayload);
+
+    // Debug: Log response from Stallion
+    console.log("[ShipmentController] Stallion rate response:", {
+      success: result.success,
+      ratesCount: result.rates?.length || 0,
+      error: result.error,
+    });
 
     if (!result.success) {
       return res.status(400).json({
