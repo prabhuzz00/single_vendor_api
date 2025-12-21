@@ -61,8 +61,16 @@ const isAdmin = async (req, res, next) => {
 
 const secretKey = process.env.ENCRYPT_PASSWORD;
 
+// Fail fast with a clear message when encryption secret is missing
+if (!secretKey) {
+  console.error(
+    "ENCRYPT_PASSWORD is not set. Please set ENCRYPT_PASSWORD in your .env (32-byte hex recommended)."
+  );
+  throw new Error("Missing ENCRYPT_PASSWORD environment variable");
+}
+
 // Ensure the secret key is exactly 32 bytes (256 bits)
-const key = crypto.createHash("sha256").update(secretKey).digest();
+const key = crypto.createHash("sha256").update(String(secretKey)).digest();
 
 // Generate an initialization vector (IV)
 const iv = crypto.randomBytes(16); // AES-CBC requires a 16-byte IV
