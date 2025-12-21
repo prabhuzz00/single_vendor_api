@@ -47,16 +47,55 @@ const getShippingRates = async (req, res) => {
       });
     }
 
-    // Build warehouse origin from env (required by Stallion)
+    // Get warehouse settings from database first, then fallback to env
+    let warehouseSetting = null;
+    try {
+      const Setting = require("../models/Setting");
+      const storeSetting = await Setting.findOne({ name: "storeSetting" });
+      if (storeSetting && storeSetting.setting) {
+        warehouseSetting = storeSetting.setting;
+      }
+    } catch (dbError) {
+      console.warn(
+        "[ShipmentController] Could not fetch warehouse from DB:",
+        dbError.message
+      );
+    }
+
+    // Build warehouse origin from database or env (required by Stallion)
     const warehouseOrigin = origin || {
-      name: process.env.WAREHOUSE_NAME || "Store Warehouse",
-      address1: process.env.WAREHOUSE_ADDRESS_LINE1 || "123 Store St",
-      city: process.env.WAREHOUSE_CITY || "Toronto",
-      province: process.env.WAREHOUSE_STATE || "ON",
-      postalCode: process.env.WAREHOUSE_POSTAL_CODE || "M5V2T6",
-      country: process.env.WAREHOUSE_COUNTRY || "CA",
-      phone: process.env.WAREHOUSE_PHONE || "4161234567",
-      email: process.env.WAREHOUSE_EMAIL || "store@example.com",
+      name:
+        warehouseSetting?.warehouse_name ||
+        process.env.WAREHOUSE_NAME ||
+        "Store Warehouse",
+      address1:
+        warehouseSetting?.warehouse_address_line1 ||
+        process.env.WAREHOUSE_ADDRESS_LINE1 ||
+        "123 Store St",
+      city:
+        warehouseSetting?.warehouse_city ||
+        process.env.WAREHOUSE_CITY ||
+        "Toronto",
+      province:
+        warehouseSetting?.warehouse_state ||
+        process.env.WAREHOUSE_STATE ||
+        "ON",
+      postalCode:
+        warehouseSetting?.warehouse_postal_code ||
+        process.env.WAREHOUSE_POSTAL_CODE ||
+        "M5V2T6",
+      country:
+        warehouseSetting?.warehouse_country ||
+        process.env.WAREHOUSE_COUNTRY ||
+        "CA",
+      phone:
+        warehouseSetting?.warehouse_phone ||
+        process.env.WAREHOUSE_PHONE ||
+        "4161234567",
+      email:
+        warehouseSetting?.warehouse_email ||
+        process.env.WAREHOUSE_EMAIL ||
+        "store@example.com",
     };
 
     // Ensure destination has proper province (not just country)
